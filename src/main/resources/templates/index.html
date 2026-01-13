@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App - Simple & Beautiful</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-check-circle"></i> SimpleTodo</h1>
+                <p>Manage your tasks with style and efficiency</p>
+            </div>
+        </header>
+
+        <!-- Stats Section -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${totalCount != null ? totalCount : '0'}">0</h3>
+                    <p>Total Tasks</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${completedCount != null ? completedCount : '0'}">0</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${pendingCount != null ? pendingCount : '0'}">0</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${urgentCount != null ? urgentCount : '0'}">0</h3>
+                    <p>Urgent</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Todo List Section -->
+            <section class="todo-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> My Tasks</h2>
+                    <div class="filters">
+                        <button class="filter-btn active" onclick="filterTodos('all')">All</button>
+                        <button class="filter-btn" onclick="filterTodos('pending')">Pending</button>
+                        <button class="filter-btn" onclick="filterTodos('completed')">Completed</button>
+                    </div>
+                </div>
+
+                <div class="todo-list" id="todoList">
+                    <!-- Empty State -->
+                    <div th:if="${todos == null or todos.empty}" class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>No tasks yet</h3>
+                        <p>Add your first task using the form!</p>
+                    </div>
+
+                    <!-- Todo Items -->
+                    <div th:each="todo : ${todos}" 
+                         class="todo-item" 
+                         th:classappend="${todo.completed} ? 'completed' : ''"
+                         th:attr="data-priority=${todo.priority}, data-completed=${todo.completed}">
+                        
+                        <!-- Checkbox -->
+                        <form th:action="@{/todos/{id}/toggle(id=${todo.id})}" method="post" style="display: inline;">
+                            <button type="button" class="todo-checkbox" 
+                                    th:classappend="${todo.completed} ? 'checked' : ''"
+                                    onclick="toggleTodo(this, event)">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+
+                        <!-- Todo Content -->
+                        <div class="todo-content">
+                            <h4 class="todo-title" th:text="${todo.title}">Task Title</h4>
+                            <p class="todo-desc" th:text="${todo.description}">Description</p>
+                            
+                            <div class="todo-tags">
+                                <span th:if="${todo.category}" class="tag category" th:text="${todo.category}">Category</span>
+                                <span th:if="${todo.dueDate}" class="tag date">
+                                    <i class="far fa-calendar"></i>
+                                    <span th:text="${#temporals.format(todo.dueDate, 'MMM dd')}">Date</span>
+                                </span>
+                                <span class="tag priority" th:classappend="${todo.priority}">
+                                    <i class="fas fa-flag"></i>
+                                    <span th:text="${todo.priority}">Priority</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="todo-actions">
+                            <form th:action="@{/todos/{id}/delete(id=${todo.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn-icon delete" onclick="return confirmDelete()">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Todo Form -->
+            <aside class="form-section">
+                <div class="form-header">
+                    <h2><i class="fas fa-plus"></i> Add New Task</h2>
+                </div>
+                
+                <form th:action="@{/todos}" method="post" th:object="${newTodo}" id="todoForm">
+                    <div class="form-group">
+                        <label for="title"><i class="fas fa-heading"></i> Title *</label>
+                        <input type="text" id="title" th:field="*{title}" placeholder="What needs to be done?" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="description" th:field="*{description}" placeholder="Add details..." rows="3"></textarea>
+                        <div class="char-count">Characters: <span id="charCount">0</span></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category"><i class="fas fa-tag"></i> Category</label>
+                            <input type="text" id="category" th:field="*{category}" placeholder="Work, Personal...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority"><i class="fas fa-flag"></i> Priority</label>
+                            <select id="priority" th:field="*{priority}">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="URGENT">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dueDate"><i class="far fa-calendar"></i> Due Date</label>
+                        <input type="datetime-local" id="dueDate" th:field="*{dueDate}">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </form>
+            </aside>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Todo App &copy; 2024 | Built with Spring Boot</p>
+        </footer>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Task completed successfully!</div>
+
+    <script src="/js/script.js"></script>
+</body>
+</html>
