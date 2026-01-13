@@ -1,4 +1,4 @@
-![](.\screenshots\icon.png)
+![](screenshots/icon.png)
 
 # SparkTodo
 
@@ -15,17 +15,17 @@ The project focuses on clean UI, complete CRUD functionality, and a simple archi
 ## Screenshots
 
 ### Dashboard
-![Dashboard](.\screenshots\dashboard.png)
+![Dashboard](screenshots/dashboard.png)
 
 ### Todo List and Task Creation
-![Todo UI](.\screenshots\task.png)
+![Todo UI](screenshots/task.png)
 
 ### Date and Time Picker
-![Date Time Picker](.\screenshots\datetime.png)
+![Date Time Picker](screenshots/datetime.png)
 
 ### H2 Database Console
-![H2 Console](.\screenshots\h2database.png)
-![SQL Query](.\screenshots\sqlquery.png)
+![H2 Console](screenshots/h2database.png)
+![SQL Query](screenshots/sqlquery.png)
 
 
 ---
